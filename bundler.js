@@ -5,4 +5,4 @@ import fs from 'fs';
 console.log("Hello World")
 
 const luabundle = bundle(`./stripmine.lua`)
-fs.writeFileSync(`./budnle.lua`, luabundle)
+fs.writeFileSync(`./bundle.lua`, luabundle)
