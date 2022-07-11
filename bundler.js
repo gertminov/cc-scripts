@@ -6,7 +6,7 @@ import fs from 'fs';
 console.log("started Bundler");
 console.log("watching for changes...");
 
-chokidar.watch('./src').on('all', (event, path) => {
+chokidar.watch('./src/').on('all', (event, path) => {
     if(event !== 'change') return
 
     console.log(event, path);
