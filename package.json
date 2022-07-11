@@ -1,5 +1,8 @@
 {
   "type": "module",
+  "scripts": {
+    "build": "node bundler.js"
+  },
   "dependencies": {
     "luabundle": "^1.6.0"
   }

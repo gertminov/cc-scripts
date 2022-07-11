@@ -91,7 +91,10 @@ local function digForwardAndUP()
     turtle.digUp()
 end
 
-function digForward(steps)
+
+
+-- function that moves the turtle forward for "steps" blocks
+local function digForward(steps)
     if steps == 0 then
         return
     end
@@ -109,8 +112,8 @@ function digForward(steps)
     turtle.digUp()
 end
 
--- function that moves the turtle backward for steps steps
-function backward(steps)
+-- function that moves the turtle backward for "steps" blocks
+local function backward(steps)
     if steps == 0 then
         return
     end
@@ -122,10 +125,18 @@ function backward(steps)
     turtle.down()
 end
 
-function digColumn(steps)
+-- digs a column of "steps" blocks and 2 blocks height and returns the tutrtle to the starting point
+local function digColumn(steps)
     digForward(steps)
     backward(steps)
 end
+
+Dig = {
+    forward = digForward,
+    backward = backward,
+    column = digColumn
+
+}
 end)
 __bundle_register("workingMaterials", function(require, _LOADED, __bundle_register, __bundle_modules)
 viableFuel = {"coal", "lava", "log", "blanks"}

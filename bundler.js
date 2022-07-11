@@ -2,7 +2,12 @@ import{bundle} from 'luabundle';
 // import node.js filesystem module
 import fs from 'fs'; 
 
-console.log("Hello World")
 
-const luabundle = bundle(`./stripmine.lua`)
-fs.writeFileSync(`./bundle.lua`, luabundle)
+
+const luabundle = bundle(`./src/stripmine.lua`, {
+    paths: ['./src/?.lua'],
+})
+fs.writeFile(`./bin/bundle.lua`, luabundle, (err) => {
+    if (err) throw err;
+    console.log('compilation complete');
+})
