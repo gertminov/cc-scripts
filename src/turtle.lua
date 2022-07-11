@@ -6,7 +6,9 @@ turtle = {
     turnLeft = function () print("turnLeft") end,
     turnRight = function () print("turnRight")  end ,
     dig = function (side) print("dig") return true, "reason" end,
-    getItemDetail = function (slot) print("getItemDetail") return {name = "name", count = 1, damage = 0} end,
+    ---comment
+    ---@param slot number
+    getItemDetail = function (slot) print("getItemDetail") return {name = "name", count = 1} end,
 }
 
 function read()

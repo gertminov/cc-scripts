@@ -95,8 +95,8 @@ end
 local function checkForFuel(amtFuel)
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
-            details = turtle.getItemDetail(i)
-            for fuel in viableFuel do
+            local details = turtle.getItemDetail(i)
+            for t , fuel in ipairs(viableFuel) do
                 if string.find(details.name, fuel) then
                     if details.count >= amtFuel then
                         return true, 0
