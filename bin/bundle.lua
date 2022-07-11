@@ -82,7 +82,7 @@ function setup()
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)
 
-    print(Inventory[WorkingMaterials.TORCH])
+    print(textutils.serialize(Inventory[WorkingMaterials.TORCH]))
     digging()
     
 end
