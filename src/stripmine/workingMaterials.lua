@@ -1,3 +1,4 @@
+---@type table<string, number>
 local viableFuel = {
     ["coal"] = 80,
     ["lava"] = 1000, 
@@ -105,7 +106,8 @@ local function checkForFuel(amtFuel)
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
             local details = turtle.getItemDetail(i)
-            for t , fuel in ipairs(viableFuel) do
+            -- iterate over all possible fuel types
+            for fuelType, fuelAmt in pairs(viableFuel) do
                 if string.find(details.name, fuel) then
                     if details.count >= amtFuel then
                         return true, 0
