@@ -47,7 +47,7 @@ local function printTorches(steps, rows)
     local amtTorches = calculateTorches(steps, rows)
     local enoughTorches, missing, slot = checkForTorches(amtTorches)
     local torches = Item:new{idx = slot, amt = amtTorches, name = WorkingMaterials.TORCH}
-    Inventory[workingMaterials.TORCH] = torches
+    Inventory[WorkingMaterials.TORCH] = torches
 
     if enoughTorches then
         return
