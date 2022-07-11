@@ -11,7 +11,7 @@ chokidar.watch('./src').on('all', (event, path) => {
 
     console.log(event, path);
     console.log("Compiling...");
-    const luabundle = bundle(`./src/stripmine.lua`, {
+    const luabundle = bundle(`./src/stripmine/stripmine.lua`, {
         paths: ['./src/?.lua'],
         luaVersion: '5.3'
     })
