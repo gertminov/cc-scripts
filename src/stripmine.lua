@@ -4,6 +4,7 @@ require("workingMaterials")
 require("digging")
 require("placing")
 require("enums")
+require("turtle")
 
 
 local steps = 0
@@ -25,7 +26,7 @@ function setup()
     steps = User.Ask.forSteps()
     rows = User.Ask.forRows()
     direction = User.Ask.forDirection()
-    
+
     Consumables.checkFuel(steps, rows)
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)

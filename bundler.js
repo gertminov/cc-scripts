@@ -13,6 +13,7 @@ chokidar.watch('./src').on('all', (event, path) => {
     console.log("Compiling...");
     const luabundle = bundle(`./src/stripmine.lua`, {
         paths: ['./src/?.lua'],
+        luaVersion: '5.3'
     })
     fs.writeFile(`./bin/bundle.lua`, luabundle, (err) => {
         if (err) throw err;

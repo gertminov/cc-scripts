@@ -48,6 +48,7 @@ require("workingMaterials")
 require("digging")
 require("placing")
 require("enums")
+require("turtle")
 
 
 local steps = 0
@@ -69,8 +70,7 @@ function setup()
     steps = User.Ask.forSteps()
     rows = User.Ask.forRows()
     direction = User.Ask.forDirection()
-    print("ahllo")
-    
+
     Consumables.checkFuel(steps, rows)
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)
@@ -80,6 +80,22 @@ end
 setup()
 
 
+end)
+__bundle_register("turtle", function(require, _LOADED, __bundle_register, __bundle_modules)
+turtle = {
+    forward = function () print("forward") end,
+    back = function () print("back") end,
+    up = function () print("up") end,
+    down = function () print("down") end,
+    turnLeft = function () print("turnLeft") end,
+    turnRight = function () print("turnRight")  end ,
+    dig = function (side) print("dig") return true, "reason" end,
+    getItemDetail = function (slot) print("getItemDetail") return {name = "name", count = 1, damage = 0} end,
+}
+
+function read()
+    return io.read()
+end
 end)
 __bundle_register("enums", function(require, _LOADED, __bundle_register, __bundle_modules)
 ---@alias Direction "r"|"l"
