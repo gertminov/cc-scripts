@@ -47,31 +47,44 @@ require("getParams")
 require("workingMaterials")
 require("digging")
 require("placing")
+require("enums")
 
 
 steps = 0
-direction = nil
+local direction = nil
 rows = 0
 sinceLastTorch = 0
 light = nil
 
-coordinates = {}
-coordinates["x"] = 0
-coordinates["y"] = 0
+coordinates = {
+    x = 0,
+    y = 0,
+    z = 0
+}
+
 
 function setup()
     greeting()
-    steps = askForSteps()
-    rows = askForRows()
-    direction = askForDirection()
-    printTorches(steps, rows)
-    printChests(steps, rows)
-    printFuel(steps, rows)
+    steps = User.Ask.forSteps()
+    rows = User.Ask.forRows()
+    direction = User.Ask.forDirection()
+    
+    Consumables.checkFuel()
+    Consumables.checkTorches()
+    Consumables.checkChests()
+    Dig.changeRow(direction)
 end
 
 setup()
 
 
+end)
+__bundle_register("enums", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@class Direction
+Direction = {
+    RIGHT = "r",
+    LEFT = "l"
+}
 end)
 __bundle_register("placing", function(require, _LOADED, __bundle_register, __bundle_modules)
 function placeTorchBehind()
@@ -131,16 +144,48 @@ local function digColumn(steps)
     backward(steps)
 end
 
+--@param direction Direction
+local function changeRow(direction)
+    local reverseDirection = nil
+    if direction == Direction.RIGHT then
+        turtle.turnRight()
+        reverseDirection = turtle.turnLeft
+        else
+        turtle.turnLeft()
+        reverseDirection = turtle.turnRight
+    end
+    digForwardAndUP()
+    digForwardAndUP()
+    reverseDirection()
+end
+
 Dig = {
     forward = digForward,
     backward = backward,
-    column = digColumn
+    column = digColumn,
+    changeRow = changeRow
 
 }
 end)
 __bundle_register("workingMaterials", function(require, _LOADED, __bundle_register, __bundle_modules)
-viableFuel = {"coal", "lava", "log", "blanks"}
+local viableFuel = {"coal", "lava", "log", "blanks"}
 
+
+local function cehckForItem(wantedAmt, itemName)
+    for i=1, 16 do
+        if turtle.getItemCount(i) > 0 then
+            details = turtle.getItemDetail(i)
+            if details.name == itemName  then
+                if details.count >= wantedAmt then
+                    return true, 0
+                else
+                    return false, math.ceil(wantedAmt - details.count)
+                end
+            end
+        end
+    end
+    return false, wantedAmt
+end
 
 
 -- function that calculates the amount of torches needed for the given amount of steps and rows
@@ -148,10 +193,15 @@ viableFuel = {"coal", "lava", "log", "blanks"}
      return math.ceil(steps/8) * rows
  end
 
-
+ local function checkForTorches(amtTorches)
+    return cehckForItem(amtTorches, "minecraft:torch")
+end
 
  -- print to user the amount of torches needed for the given amount of steps and rows
-function printTorches(steps, rows)
+ ---comment
+ ---@param steps number
+ ---@param rows number
+local function printTorches(steps, rows)
     local amtTorches = calculateTorches(steps, rows)
     local enoughTorches, missing = checkForTorches(amtTorches)
     if enoughTorches then
@@ -174,18 +224,22 @@ function printTorches(steps, rows)
 
 end
 
-function checkForTorches(amtTorches)
-    return cehckForItem(amtTorches, "minecraft:torch")
-end
 
 
  -- function that calculates the amount of chests needed for the given amount of steps and rows
- function calculateChests(steps, rows)
+local function calculateChests(steps, rows)
     return math.floor(steps/260 * rows)
 end
 
+local function checkForChests(amtChests)
+    return cehckForItem(amtChests, "minecraft:chest")
+end
+
     -- print to user the amount of chests needed for the given amount of steps and rows
-function printChests(steps, rows)
+    ---comment
+    ---@param steps number
+    ---@param rows number
+local function printChests(steps, rows)
     local amtChests = calculateChests(steps, rows)
     local enoughChests, missing = checkForChests(amtChests)
     if enoughChests then
@@ -207,18 +261,39 @@ function printChests(steps, rows)
     end
 end
 
-function checkForChests(amtChests)
-    return cehckForItem(amtChests, "minecraft:chest")
+
+local function checkForFuel(amtFuel)
+    for i=1, 16 do
+        if turtle.getItemCount(i) > 0 then
+            details = turtle.getItemDetail(i)
+            for fuel in viableFuel do
+                if string.find(details.name, fuel) then
+                    if details.count >= amtFuel then
+                        return true, 0
+                    else
+                        return false, math.ceil(amtFuel - details.count)
+                    end
+                end
+            end
+           
+        end
+    end
+    return false, amtFuel
 end
 
-
--- function that calculates the amount of fuel needed for the given amount of steps and rows
-function calculateFuel(steps, rows)
+---comment
+---@param steps number
+---@param rows number
+---@return number
+local function calculateFuel(steps, rows)
     return steps * rows + (rows* 3)
 end
 
     -- print to user the amount of fuel needed for the given amount of steps and rows
-function printFuel(steps, rows)
+    ---comment
+    ---@param steps number
+    ---@param rows number
+local function printFuel(steps, rows)
     local amtFuel = calculateFuel(steps, rows)
     local enoughFuel, missing = checkForFuel(amtFuel)
     if enoughFuel then
@@ -240,80 +315,87 @@ function printFuel(steps, rows)
     end
 end
 
-function checkForFuel(amtFuel)
-    for i=1, 16 do
-        if turtle.getItemCount(i) > 0 then
-            details = turtle.getItemDetail(i)
-            for fuel in viableFuel do
-                if string.find(details.name, fuel) then
-                    if details.count >= amtFuel then
-                        return true, 0
-                    else
-                        return false, math.ceil(amtFuel - details.count)
-                    end
-                end
-            end
-           
-        end
-    end
-    return false, amtFuel
-end
 
 
-function cehckForItem(wantedAmt, itemName)
-    for i=1, 16 do
-        if turtle.getItemCount(i) > 0 then
-            details = turtle.getItemDetail(i)
-            if details.name == itemName  then
-                if details.count >= wantedAmt then
-                    return true, 0
-                else
-                    return false, math.ceil(wantedAmt - details.count)
-                end
-            end
-        end
-    end
-    return false, wantedAmt
-end
+
+
+---@class Consumables
+---@field public printTorches function
+---@field public printChests function
+---@field public printFuel function
+Consumables = {
+    checkTorches = printTorches,
+    checkChests = printChests,
+    checkFuel = printFuel
+}
     
 
 end)
 __bundle_register("getParams", function(require, _LOADED, __bundle_register, __bundle_modules)
-function greeting()
+local function greeting()
     print("Welcome to stripminer 1.0!")
+    print("you can stop the program at any point by holding Ctrl + T")
 end
 
-function askForSteps()
+---comment
+---@return number
+local function askForSteps()
     print("How many steps do you want to dig?")
-    steps = tonumber(read())
+    local steps = tonumber(read())
     if steps == nil then
         print("invalid input")
         askForSteps()
     end
+---@diagnostic disable-next-line: return-type-mismatch
     return steps
 end
 
-function askForRows()
+
+---comment
+---@return number
+local function askForRows()
     print("How many rows do you want to mine?")
-    rows = tonumber(read())
+    local rows = tonumber(read())
     if rows == nil then
         print("Invalid input")
         askForRows()
     end
+---@diagnostic disable-next-line: return-type-mismatch
     return rows
 end
 
-function askForDirection()
+---@return Direction
+local function askForDirection()
     print("turn left, or right?, (r, l)")
     local turn = read()
     if turn == "r" or turn == "right" then
-        direction = "r"
+        return Direction.RIGHT
     elseif turn == "l" or turn == "left" then
-        direction = "l"
+        return Direction.LEFT
     else
         print("invalid input")
         askForDirection()
+---@diagnostic disable-next-line: missing-return
     end
 end
+
+---@class User
+---@field public Ask Ask
+User = {
+    ---@class Ask
+    ---@field public Ask.forSteps function
+    ---@field public Ask.forRows function
+    ---@field public Ask.forDirection function
+    Ask = {
+        forSteps = askForSteps,
+        forRows = askForRows,
+        forDirection = askForDirection
+    },
+    ---@class Say
+    ---@field public Say.greeting function
+    Say = {
+        greeting = greeting
+    }
+}
 end)
 return __bundle_require("__root")

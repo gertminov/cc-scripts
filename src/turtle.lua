@@ -7,3 +7,7 @@ turtle = {
     turnRight = function ()end ,
     dig = function (side) return true, "reason" end,
 }
+
+function read()
+    
+end

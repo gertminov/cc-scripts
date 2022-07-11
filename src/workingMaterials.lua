@@ -1,16 +1,37 @@
-viableFuel = {"coal", "lava", "log", "blanks"}
+local viableFuel = {"coal", "lava", "log", "blanks"}
 
+
+local function cehckForItem(wantedAmt, itemName)
+    for i=1, 16 do
+        if turtle.getItemCount(i) > 0 then
+            local details = turtle.getItemDetail(i)
+            if details.name == itemName  then
+                if details.count >= wantedAmt then
+                    return true, 0
+                else
+                    return false, math.ceil(wantedAmt - details.count)
+                end
+            end
+        end
+    end
+    return false, wantedAmt
+end
 
 
 -- function that calculates the amount of torches needed for the given amount of steps and rows
- function calculateTorches(steps, rows)
+local function calculateTorches(steps, rows)
      return math.ceil(steps/8) * rows
- end
+end
 
-
+local function checkForTorches(amtTorches)
+    return cehckForItem(amtTorches, "minecraft:torch")
+end
 
  -- print to user the amount of torches needed for the given amount of steps and rows
-function printTorches(steps, rows)
+ ---comment
+ ---@param steps number
+ ---@param rows number
+local function printTorches(steps, rows)
     local amtTorches = calculateTorches(steps, rows)
     local enoughTorches, missing = checkForTorches(amtTorches)
     if enoughTorches then
@@ -33,18 +54,22 @@ function printTorches(steps, rows)
 
 end
 
-function checkForTorches(amtTorches)
-    return cehckForItem(amtTorches, "minecraft:torch")
-end
 
 
  -- function that calculates the amount of chests needed for the given amount of steps and rows
- function calculateChests(steps, rows)
+local function calculateChests(steps, rows)
     return math.floor(steps/260 * rows)
 end
 
+local function checkForChests(amtChests)
+    return cehckForItem(amtChests, "minecraft:chest")
+end
+
     -- print to user the amount of chests needed for the given amount of steps and rows
-function printChests(steps, rows)
+    ---comment
+    ---@param steps number
+    ---@param rows number
+local function printChests(steps, rows)
     local amtChests = calculateChests(steps, rows)
     local enoughChests, missing = checkForChests(amtChests)
     if enoughChests then
@@ -66,18 +91,39 @@ function printChests(steps, rows)
     end
 end
 
-function checkForChests(amtChests)
-    return cehckForItem(amtChests, "minecraft:chest")
+
+local function checkForFuel(amtFuel)
+    for i=1, 16 do
+        if turtle.getItemCount(i) > 0 then
+            details = turtle.getItemDetail(i)
+            for fuel in viableFuel do
+                if string.find(details.name, fuel) then
+                    if details.count >= amtFuel then
+                        return true, 0
+                    else
+                        return false, math.ceil(amtFuel - details.count)
+                    end
+                end
+            end
+           
+        end
+    end
+    return false, amtFuel
 end
 
-
--- function that calculates the amount of fuel needed for the given amount of steps and rows
-function calculateFuel(steps, rows)
+---comment
+---@param steps number
+---@param rows number
+---@return number
+local function calculateFuel(steps, rows)
     return steps * rows + (rows* 3)
 end
 
     -- print to user the amount of fuel needed for the given amount of steps and rows
-function printFuel(steps, rows)
+    ---comment
+    ---@param steps number
+    ---@param rows number
+local function printFuel(steps, rows)
     local amtFuel = calculateFuel(steps, rows)
     local enoughFuel, missing = checkForFuel(amtFuel)
     if enoughFuel then
@@ -99,39 +145,17 @@ function printFuel(steps, rows)
     end
 end
 
-function checkForFuel(amtFuel)
-    for i=1, 16 do
-        if turtle.getItemCount(i) > 0 then
-            details = turtle.getItemDetail(i)
-            for fuel in viableFuel do
-                if string.find(details.name, fuel) then
-                    if details.count >= amtFuel then
-                        return true, 0
-                    else
-                        return false, math.ceil(amtFuel - details.count)
-                    end
-                end
-            end
-           
-        end
-    end
-    return false, amtFuel
-end
 
 
-function cehckForItem(wantedAmt, itemName)
-    for i=1, 16 do
-        if turtle.getItemCount(i) > 0 then
-            details = turtle.getItemDetail(i)
-            if details.name == itemName  then
-                if details.count >= wantedAmt then
-                    return true, 0
-                else
-                    return false, math.ceil(wantedAmt - details.count)
-                end
-            end
-        end
-    end
-    return false, wantedAmt
-end
+
+
+---@class Consumables
+---@field public printTorches function
+---@field public printChests function
+---@field public printFuel function
+Consumables = {
+    checkTorches = printTorches,
+    checkChests = printChests,
+    checkFuel = printFuel
+}
     

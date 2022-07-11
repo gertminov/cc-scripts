@@ -46,9 +46,26 @@ local function digColumn(steps)
     backward(steps)
 end
 
+---@param direction Direction
+local function changeRow(direction)
+    local reverseDirection = nil
+    if direction == Direction.RIGHT then
+        turtle.turnRight()
+        reverseDirection = turtle.turnLeft
+        else
+        turtle.turnLeft()
+        reverseDirection = turtle.turnRight
+    end
+    digForwardAndUP()
+    digForwardAndUP()
+    digForwardAndUP()
+    reverseDirection()
+end
+
 Dig = {
     forward = digForward,
     backward = backward,
-    column = digColumn
+    column = digColumn,
+    changeRow = changeRow
 
 }
