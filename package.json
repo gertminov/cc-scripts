@@ -4,6 +4,7 @@
     "build": "node bundler.js"
   },
   "dependencies": {
+    "chokidar": "^3.5.3",
     "luabundle": "^1.6.0"
   }
 }

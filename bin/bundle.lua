@@ -69,6 +69,7 @@ function setup()
     steps = User.Ask.forSteps()
     rows = User.Ask.forRows()
     direction = User.Ask.forDirection()
+    print("ahllo")
     
     Consumables.checkFuel(steps, rows)
     Consumables.checkTorches(steps, rows)
