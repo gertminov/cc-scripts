@@ -4,7 +4,7 @@ require("workingMaterials")
 require("digging")
 require("placing")
 require("enums")
-require("turtle")
+--- require("turtle")
 
 
 local steps = 0
@@ -22,8 +22,6 @@ local coordinates = {
 
 
 function setup()
-    print("hallo")
-
     User.Say.greeting()
     steps = User.Ask.forSteps()
     rows = User.Ask.forRows()
