@@ -192,7 +192,12 @@ Dig = {
 }
 end)
 __bundle_register("workingMaterials", function(require, _LOADED, __bundle_register, __bundle_modules)
-local viableFuel = {"coal", "lava", "log", "blanks"}
+local viableFuel = {
+    ["coal"] = 80,
+    ["lava"] = 1000, 
+    ["log"] = 15, 
+    ["blanks"] = 15
+}
 
 
 local function cehckForItem(wantedAmt, itemName)
@@ -265,6 +270,10 @@ end
     ---@param rows number
 local function printChests(steps, rows)
     local amtChests = calculateChests(steps, rows)
+    if amtChests == 0 then
+        return
+    end
+
     local enoughChests, missing = checkForChests(amtChests)
     if enoughChests then
         return
