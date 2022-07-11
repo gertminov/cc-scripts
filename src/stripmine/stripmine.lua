@@ -21,7 +21,7 @@ local coordinates = {
 }
 
 local function digging()
-    
+
     for row = 1, rows do
         Dig.column(steps)
         Dig.changeRow(direction)
@@ -38,6 +38,7 @@ function setup()
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)
 
+    print(Inventory[WorkingMaterials.TORCH])
     digging()
     
 end

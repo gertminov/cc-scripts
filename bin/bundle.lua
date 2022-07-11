@@ -65,7 +65,7 @@ local coordinates = {
 }
 
 local function digging()
-    
+
     for row = 1, rows do
         Dig.column(steps)
         Dig.changeRow(direction)
@@ -82,6 +82,7 @@ function setup()
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)
 
+    print(Inventory[WorkingMaterials.TORCH])
     digging()
     
 end
@@ -102,15 +103,46 @@ Direction = {
     RIGHT = "r",
     LEFT = "l"
 }
+
+WorkingMaterials = {
+    TORCH = "minecraft:torch",
+    CHEST = "minecraft:chest",
+    ---@type table<string, number>
+    FUEL = {
+        ["coal"] = 80,
+        ["lava"] = 1000, 
+        ["log"] = 15, 
+        ["blanks"] = 15
+    }
+}
+
+
 end)
 __bundle_register("placing", function(require, _LOADED, __bundle_register, __bundle_modules)
-function placeTorchBehind()
+--- TODO find toruch in the turtle inventory
+local function placeTorch()
+    if turtle.detect() then
+        turtle.dig()
+    end
+    turtle.place()
+end
+
+local function placeTorchBehind()
     turtle.turnRight()
     turtle.turnRight()
     placeTorch()
     turtle.turnRight()
     turtle.turnRight()
 end
+
+
+
+
+
+
+Placing = {
+    torchBehind = placeTorchBehind,
+}
 end)
 __bundle_register("digging", function(require, _LOADED, __bundle_register, __bundle_modules)
 require("placing")
@@ -192,29 +224,30 @@ Dig = {
 }
 end)
 __bundle_register("workingMaterials", function(require, _LOADED, __bundle_register, __bundle_modules)
----@type table<string, number>
-local viableFuel = {
-    ["coal"] = 80,
-    ["lava"] = 1000, 
-    ["log"] = 15, 
-    ["blanks"] = 15
-}
+require("enums")
+require("inventory")
+require("Item")
 
-
+---comment
+---@param wantedAmt number
+---@param itemName string
+---@return boolean enough
+---@return integer still_needed
+---@return integer inventory_slot
 local function cehckForItem(wantedAmt, itemName)
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
             local details = turtle.getItemDetail(i)
             if details.name == itemName  then
                 if details.count >= wantedAmt then
-                    return true, 0
+                    return true, 0, i
                 else
-                    return false, math.ceil(wantedAmt - details.count)
+                    return false, math.ceil(wantedAmt - details.count), i
                 end
             end
         end
     end
-    return false, wantedAmt
+    return false, math.ceil(wantedAmt), -1
 end
 
 
@@ -223,6 +256,11 @@ local function calculateTorches(steps, rows)
      return math.ceil(steps/8) * rows
 end
 
+---comment
+---@param amtTorches any
+---@return boolean enough
+---@return integer still_needed
+---@return integer inventory_slot
 local function checkForTorches(amtTorches)
     return cehckForItem(amtTorches, "minecraft:torch")
 end
@@ -233,7 +271,10 @@ end
  ---@param rows number
 local function printTorches(steps, rows)
     local amtTorches = calculateTorches(steps, rows)
-    local enoughTorches, missing = checkForTorches(amtTorches)
+    local enoughTorches, missing, slot = checkForTorches(amtTorches)
+    local torches = Item:new{idx = slot, amt = amtTorches, name = WorkingMaterials.TORCH}
+    Inventory[workingMaterials.TORCH] = torches
+
     if enoughTorches then
         return
     else
@@ -245,6 +286,7 @@ local function printTorches(steps, rows)
         os.pullEvent("turtle_inventory")
         local enough, missing = checkForTorches(amtTorches)
         if enough then
+            Inventory[workingMaterials.TORCH].amt = amtTorches
             print("You have enough torches")
             return
         else
@@ -300,7 +342,7 @@ local function checkForFuel(amtFuel)
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
             local details = turtle.getItemDetail(i)
-            for fuelType, fuelAmt in pairs(viableFuel) do
+            for fuelType, fuelAmt in pairs(WorkingMaterials.FUEL) do
                 if string.find(details.name, fuelType) then
                     if details.count*fuelAmt >= amtFuel then
                         return true, 0
@@ -364,6 +406,32 @@ Consumables = {
 }
     
 
+end)
+__bundle_register("Item", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@class Item
+---@field public index number
+---@field public amount number
+---@field public name string
+Item = {
+    idx = -1,
+    amt = -1,
+    name = "",
+}
+
+function Item:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+
+end)
+__bundle_register("inventory", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@table<string,Item>
+Inventory = {
+
+}
 end)
 __bundle_register("getParams", function(require, _LOADED, __bundle_register, __bundle_modules)
 local function greeting()

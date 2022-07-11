@@ -1,0 +1,4 @@
+---@table<string,Item>
+Inventory = {
+
+}

@@ -1,26 +1,27 @@
----@type table<string, number>
-local viableFuel = {
-    ["coal"] = 80,
-    ["lava"] = 1000, 
-    ["log"] = 15, 
-    ["blanks"] = 15
-}
+require("enums")
+require("inventory")
+require("Item")
 
-
+---comment
+---@param wantedAmt number
+---@param itemName string
+---@return boolean enough
+---@return integer still_needed
+---@return integer inventory_slot
 local function cehckForItem(wantedAmt, itemName)
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
             local details = turtle.getItemDetail(i)
             if details.name == itemName  then
                 if details.count >= wantedAmt then
-                    return true, 0
+                    return true, 0, i
                 else
-                    return false, math.ceil(wantedAmt - details.count)
+                    return false, math.ceil(wantedAmt - details.count), i
                 end
             end
         end
     end
-    return false, wantedAmt
+    return false, math.ceil(wantedAmt), -1
 end
 
 
@@ -29,6 +30,11 @@ local function calculateTorches(steps, rows)
      return math.ceil(steps/8) * rows
 end
 
+---comment
+---@param amtTorches any
+---@return boolean enough
+---@return integer still_needed
+---@return integer inventory_slot
 local function checkForTorches(amtTorches)
     return cehckForItem(amtTorches, "minecraft:torch")
 end
@@ -39,7 +45,10 @@ end
  ---@param rows number
 local function printTorches(steps, rows)
     local amtTorches = calculateTorches(steps, rows)
-    local enoughTorches, missing = checkForTorches(amtTorches)
+    local enoughTorches, missing, slot = checkForTorches(amtTorches)
+    local torches = Item:new{idx = slot, amt = amtTorches, name = WorkingMaterials.TORCH}
+    Inventory[workingMaterials.TORCH] = torches
+
     if enoughTorches then
         return
     else
@@ -51,6 +60,7 @@ local function printTorches(steps, rows)
         os.pullEvent("turtle_inventory")
         local enough, missing = checkForTorches(amtTorches)
         if enough then
+            Inventory[workingMaterials.TORCH].amt = amtTorches
             print("You have enough torches")
             return
         else
@@ -106,7 +116,7 @@ local function checkForFuel(amtFuel)
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
             local details = turtle.getItemDetail(i)
-            for fuelType, fuelAmt in pairs(viableFuel) do
+            for fuelType, fuelAmt in pairs(WorkingMaterials.FUEL) do
                 if string.find(details.name, fuelType) then
                     if details.count*fuelAmt >= amtFuel then
                         return true, 0
