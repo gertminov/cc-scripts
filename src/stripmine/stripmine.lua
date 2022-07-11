@@ -21,7 +21,7 @@ local coordinates = {
 }
 
 local function digging()
-
+    
     for row = 1, rows do
         Dig.column(steps)
         Dig.changeRow(direction)

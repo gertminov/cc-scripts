@@ -65,7 +65,7 @@ local coordinates = {
 }
 
 local function digging()
-
+    
     for row = 1, rows do
         Dig.column(steps)
         Dig.changeRow(direction)
@@ -192,6 +192,7 @@ Dig = {
 }
 end)
 __bundle_register("workingMaterials", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@type table<string, number>
 local viableFuel = {
     ["coal"] = 80,
     ["lava"] = 1000, 
@@ -299,12 +300,12 @@ local function checkForFuel(amtFuel)
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
             local details = turtle.getItemDetail(i)
-            for t , fuel in ipairs(viableFuel) do
-                if string.find(details.name, fuel) then
-                    if details.count >= amtFuel then
+            for fuelType, fuelAmt in pairs(viableFuel) do
+                if string.find(details.name, fuelType) then
+                    if details.count*fuelAmt >= amtFuel then
                         return true, 0
                     else
-                        return false, math.ceil(amtFuel - details.count)
+                        return false, math.ceil(amtFuel - details.count*fuelAmt)
                     end
                 end
             end
