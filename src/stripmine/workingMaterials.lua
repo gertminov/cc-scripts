@@ -44,23 +44,23 @@ end
  ---@param steps number
  ---@param rows number
 local function printTorches(steps, rows)
-    local amtTorches = calculateTorches(steps, rows)
-    local enoughTorches, missing, slot = checkForTorches(amtTorches)
-    local torches = Item:new{idx = slot, amt = amtTorches, name = WorkingMaterials.TORCH}
-    Inventory[WorkingMaterials.TORCH] = torches
+    local neededAmtTorches = calculateTorches(steps, rows)
+    local enoughTorches, missing, slot = checkForTorches(neededAmtTorches)
+    local torches = Item:new{idx = slot, amt = -1, name = WorkingMaterials.TORCH}
+    Inventory[slot] = torches
 
     if enoughTorches then
         return
     else
-        amtTorches = missing
+        neededAmtTorches = missing
     end
-    print("You need " .. amtTorches .. " torches.")
+    print("You need " .. neededAmtTorches .. " torches.")
     print("Please place them into the turtles inventory")
     while true do
         os.pullEvent("turtle_inventory")
-        local enough, missing = checkForTorches(amtTorches)
+        local enough, missing = checkForTorches(neededAmtTorches)
         if enough then
-            Inventory[workingMaterials.TORCH].amt = amtTorches
+            Inventory[slot].amt = Inventory.getItemAtIdx(slot, WorkingMaterials.TORCH).count
             print("You have enough torches")
             return
         else
