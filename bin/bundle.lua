@@ -66,6 +66,8 @@ local coordinates = {
 
 
 function setup()
+    print("hallo")
+
     User.Say.greeting()
     steps = User.Ask.forSteps()
     rows = User.Ask.forRows()
