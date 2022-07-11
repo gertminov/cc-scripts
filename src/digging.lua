@@ -1,5 +1,7 @@
 require("placing")
 
+local updateCords = nil
+
 
 local function digForwardAndUP()
     turtle.dig()
@@ -60,6 +62,10 @@ local function changeRow(direction)
     digForwardAndUP()
     digForwardAndUP()
     reverseDirection()
+end
+
+local function initDigger(updateCords)
+
 end
 
 Dig = {
