@@ -50,13 +50,14 @@ require("placing")
 require("enums")
 
 
-steps = 0
+local steps = 0
 local direction = nil
-rows = 0
+local rows = 0
 sinceLastTorch = 0
 light = nil
 
-coordinates = {
+---@type table<string, number>
+local coordinates = {
     x = 0,
     y = 0,
     z = 0
@@ -64,14 +65,14 @@ coordinates = {
 
 
 function setup()
-    greeting()
+    User.Say.greeting()
     steps = User.Ask.forSteps()
     rows = User.Ask.forRows()
     direction = User.Ask.forDirection()
     
-    Consumables.checkFuel()
-    Consumables.checkTorches()
-    Consumables.checkChests()
+    Consumables.checkFuel(steps, rows)
+    Consumables.checkTorches(steps, rows)
+    Consumables.checkChests(steps, rows)
     Dig.changeRow(direction)
 end
 
@@ -80,7 +81,9 @@ setup()
 
 end)
 __bundle_register("enums", function(require, _LOADED, __bundle_register, __bundle_modules)
----@class Direction
+---@alias Direction "r"|"l"
+
+---@type Direction
 Direction = {
     RIGHT = "r",
     LEFT = "l"
@@ -144,7 +147,7 @@ local function digColumn(steps)
     backward(steps)
 end
 
---@param direction Direction
+---@param direction Direction
 local function changeRow(direction)
     local reverseDirection = nil
     if direction == Direction.RIGHT then
@@ -154,6 +157,7 @@ local function changeRow(direction)
         turtle.turnLeft()
         reverseDirection = turtle.turnRight
     end
+    digForwardAndUP()
     digForwardAndUP()
     digForwardAndUP()
     reverseDirection()
@@ -174,7 +178,7 @@ local viableFuel = {"coal", "lava", "log", "blanks"}
 local function cehckForItem(wantedAmt, itemName)
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
-            details = turtle.getItemDetail(i)
+            local details = turtle.getItemDetail(i)
             if details.name == itemName  then
                 if details.count >= wantedAmt then
                     return true, 0
@@ -189,11 +193,11 @@ end
 
 
 -- function that calculates the amount of torches needed for the given amount of steps and rows
- function calculateTorches(steps, rows)
+local function calculateTorches(steps, rows)
      return math.ceil(steps/8) * rows
- end
+end
 
- local function checkForTorches(amtTorches)
+local function checkForTorches(amtTorches)
     return cehckForItem(amtTorches, "minecraft:torch")
 end
 
