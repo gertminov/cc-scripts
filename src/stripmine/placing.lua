@@ -4,7 +4,7 @@ local function placeTorch()
         turtle.dig()
     end
     local item = Inventory.getItemByName(WorkingMaterials.TORCH)
-    if item.amt <0 then
+    if item == nil or  item.amt <0 then
         ReturnHome()
     end
     turtle.select(item.idx)
@@ -20,6 +20,13 @@ local function placeTorchBehind()
 end
 
 
+local function placeFiller(idx)
+    turtle.select(idx)
+    turtle.placeDown()
+    turtle.select(1)
+end
+
+
 
 
 
@@ -28,4 +35,5 @@ end
 
 Placing = {
     torchBehind = placeTorchBehind,
+    filler = placeFiller,
 }

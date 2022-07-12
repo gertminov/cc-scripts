@@ -15,6 +15,11 @@ WorkingMaterials = {
         ["lava"] = 1000, 
         ["log"] = 15, 
         ["blanks"] = 15
+    },
+    FILLBLOCK ={
+        "block",
+        "dirt",
+        "stone",
     }
 }
 

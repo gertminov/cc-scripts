@@ -15,3 +15,11 @@ function Item:new(o)
     return o
 end
 
+function Item:add()
+    self.amt = self.amt + 1
+end
+
+function Item:remove()
+    self.amt = self.amt - 1
+end
+

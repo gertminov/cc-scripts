@@ -48,6 +48,8 @@ require("workingMaterials")
 require("digging")
 require("placing")
 require("enums")
+require("inventory")
+require("navigator")
 --- require("turtle")
 
 
@@ -64,7 +66,7 @@ local coordinates = {
     z = 0
 }
 
-local function digging()
+local function digging(rows, steps, direction)
 
     for row = 1, rows do
         Dig.column(steps)
@@ -86,11 +88,10 @@ function setup()
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)
     print(textutils.serialize(Inventory.items))
-    Inventory.getItemByName(WorkingMaterials.TORCH)
     -- print(textutils.serialize(Inventory.items))
 
     
-    digging()
+    digging(rows, steps, direction)
     
 end
 
@@ -101,6 +102,114 @@ setup()
 
 
 
+end)
+__bundle_register("navigator", function(require, _LOADED, __bundle_register, __bundle_modules)
+
+end)
+__bundle_register("inventory", function(require, _LOADED, __bundle_register, __bundle_modules)
+local tryAgain = false
+
+local function indexInventory()
+    for i=1, 16 do
+        local item = turtle.getItemDetail(i)
+        if item ~= nil then
+            local inventoryItem = Item:new{
+                idx = i,
+                amt = item.count,
+                name = item.name
+            }
+            Inventory.items[inventoryItem.name] = inventoryItem
+        end
+    end
+end
+
+
+
+-- local function updateInventory(item, idx)
+--     if item == nil then
+--         Inventory.items[idx] = nil
+--         return { -1, -1, "no_item"}
+--     end
+--     local inventoryItem = Item:new{
+--         idx = idx,
+--         amt = item.count,
+--         name = item.name
+--     }
+--     Inventory.items[idx] = inventoryItem
+--     return inventoryItem
+    
+-- end
+
+
+---comment
+---@param idx number
+---@return  Item |nil item
+local function  getTurtleItemAtIdx(idx)
+    
+    local item = turtle.getItemDetail(idx)
+    if item  == nil then
+        if tryAgain then
+            return nil
+        end
+        indexInventory()
+        tryAgain = true
+        return getTurtleItemAtIdx(idx)
+    end
+    return Item:new{
+        idx = idx,
+        amt = item.count,
+        name = item.name
+    }
+end
+
+
+local function getItemByName(name)
+    local item  = Inventory.items[name]
+    if item == nil or item.name ~=name then
+        if tryAgain then
+            return nil
+        end
+        indexInventory()
+        tryAgain = true
+        return getItemByName(name)
+    end
+    tryAgain = false
+    return item
+end
+
+---comment
+---@return Item| nil item 
+local function findFillBlock()
+    for i=1, 16 do
+        local item = turtle.getItemDetail(i)
+        if item ~= nil then
+            
+            for j, name in pairs(WorkingMaterials.FILLBLOCK) do
+                if string.find(item.name, name) then
+                    return Item:new{
+                        idx = i,
+                        amt = item.count,
+                        name = item.name
+                    }
+                end
+                
+            end
+        end
+    end
+    return nil
+end
+
+
+
+Inventory = {
+    index = indexInventory,
+    getItemAtIdx = getTurtleItemAtIdx,
+    getItemByName = getItemByName,
+    findFillBlock = findFillBlock,
+    ---@table<string,Item>
+    items = {}
+
+}
 end)
 __bundle_register("enums", function(require, _LOADED, __bundle_register, __bundle_modules)
 ---@alias Direction "r"|"l"
@@ -120,6 +229,11 @@ WorkingMaterials = {
         ["lava"] = 1000, 
         ["log"] = 15, 
         ["blanks"] = 15
+    },
+    FILLBLOCK ={
+        "block",
+        "dirt",
+        "stone",
     }
 }
 
@@ -132,7 +246,7 @@ local function placeTorch()
         turtle.dig()
     end
     local item = Inventory.getItemByName(WorkingMaterials.TORCH)
-    if item.amt <0 then
+    if item == nil or  item.amt <0 then
         ReturnHome()
     end
     turtle.select(item.idx)
@@ -148,6 +262,13 @@ local function placeTorchBehind()
 end
 
 
+local function placeFiller(idx)
+    turtle.select(idx)
+    turtle.placeDown()
+    turtle.select(1)
+end
+
+
 
 
 
@@ -156,6 +277,7 @@ end
 
 Placing = {
     torchBehind = placeTorchBehind,
+    filler = placeFiller,
 }
 end)
 __bundle_register("digging", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -176,15 +298,24 @@ local function digForward(steps)
     if steps == 0 then
         return
     end
+    local place = function (idx )end
+    local fillIdx = 16
+    local fillBlock = Inventory.findFillBlock()
+    if fillBlock ~= nil then
+        place = Placing.filler
+        fillIdx = fillBlock.idx
+        turtle.select(fillIdx)
+    end
 
     for i = 0, steps do
         digForwardAndUP()
         turtle.forward()
         if not turtle.detectDown() then
-            turtle.placeDown()
+            place(fillIdx)
         end
         if i%8 == 1 then
             Placing.torchBehind()
+            turtle.select(fillIdx)
         end
     end
     turtle.digUp()
@@ -215,13 +346,16 @@ local function changeRow(direction)
     if direction == Direction.RIGHT then
         turtle.turnRight()
         reverseDirection = turtle.turnLeft
-        else
+    else
         turtle.turnLeft()
         reverseDirection = turtle.turnRight
     end
     digForwardAndUP()
+    turtle.forward()
     digForwardAndUP()
+    turtle.forward()
     digForwardAndUP()
+    turtle.forward()
     reverseDirection()
 end
 
@@ -283,14 +417,13 @@ end
  ---comment
  ---@param steps number
  ---@param rows number
-
-
 local function printTorches(steps, rows)
     local neededAmtTorches = calculateTorches(steps, rows)
     local enoughTorches, missing, slot = checkForTorches(neededAmtTorches)
     -- local torches = Inventory.getItemAtIdx(slot, WorkingMaterials.TORCH)
 
     if enoughTorches then
+        print("You have enough torches")
         return
     else
         neededAmtTorches = missing
@@ -333,6 +466,7 @@ local function printChests(steps, rows)
 
     local enoughChests, missing = checkForChests(amtChests)
     if enoughChests then
+        print("You have enough chests")
         return
     else
         amtChests = missing
@@ -351,15 +485,28 @@ local function printChests(steps, rows)
     end
 end
 
+local function refuel(slot)
+    turtle.select(slot)
+    turtle.refuel()
+    turtle.select(1)
+end
 
+---comment
+---@param amtFuel number
+---@return boolean enoughFuel
+---@return integer still_needed
+---@return integer inventory_slot
 local function checkForFuel(amtFuel)
+    if amtFuel <= 0 then
+        return true, 0 , -1
+    end
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
             local details = turtle.getItemDetail(i)
             for fuelType, fuelAmt in pairs(WorkingMaterials.FUEL) do
                 if string.find(details.name, fuelType) then
                     if details.count*fuelAmt >= amtFuel then
-                        return true, 0
+                        return true, 0, i
                     else
                         return false, math.ceil(amtFuel - details.count*fuelAmt)
                     end
@@ -370,6 +517,17 @@ local function checkForFuel(amtFuel)
     end
     return false, amtFuel
 end
+
+local function checkFuelLevel(neededFuel)
+    local fuellevel = turtle.getFuelLevel()
+    neededFuel = neededFuel - fuellevel
+    if neededFuel < 0 then
+        neededFuel = 0
+    end
+    return neededFuel
+end
+
+
 
 ---comment
 ---@param steps number
@@ -385,8 +543,13 @@ end
     ---@param rows number
 local function printFuel(steps, rows)
     local amtFuel = calculateFuel(steps, rows)
-    local enoughFuel, missing = checkForFuel(amtFuel)
+    amtFuel = checkFuelLevel(amtFuel)
+    local enoughFuel, missing, slot = checkForFuel(amtFuel)
     if enoughFuel then
+        print("you have enough fuel")
+        if amtFuel > 0 then
+            refuel(slot)
+        end
         return
     else
         amtFuel = missing
@@ -395,8 +558,9 @@ local function printFuel(steps, rows)
     print("Please place it into the turtles inventory")
     while true do
         os.pullEvent("turtle_inventory")
-        local enough, missing = checkForFuel(amtFuel)
+        local enough, missing, slot = checkForFuel(amtFuel)
         if enough then
+            refuel(slot)
             print("You have enough fuel")
             return
         else
@@ -404,6 +568,9 @@ local function printFuel(steps, rows)
         end
     end
 end
+
+
+
 
 
 
@@ -439,60 +606,15 @@ function Item:new(o)
     return o
 end
 
-
-end)
-__bundle_register("inventory", function(require, _LOADED, __bundle_register, __bundle_modules)
-local function updateInventory(item, idx)
-    if item == nil then
-        Inventory.items[idx] = nil
-        return { -1, -1, "no_item"}
-    end
-    local inventoryItem = Item:new{
-        idx = idx,
-        amt = item.count,
-        name = item.name
-    }
-    Inventory.items[idx] = inventoryItem
-    return inventoryItem
-    
+function Item:add()
+    self.amt = self.amt + 1
 end
 
----comment
----@param idx number
----@param name? string
----@return  {count: number, name :string} item
-local function  getTurtleItemAtIdx(idx, name)
-    
-    local item = turtle.getItemDetail(idx)
-    if name == nil then
-        return updateInventory(item, idx)
-    elseif item.name == name then
-            return updateInventory(item, idx)
-    end
-    return updateInventory(nil, idx)
+function Item:remove()
+    self.amt = self.amt - 1
 end
 
 
-local function getItemByName(name)
-    for i=1, 16 do
-        local item = getTurtleItemAtIdx(i)
-        if item.name == name then
-            return item
-        end
-    end
-    return updateInventory(nil, -1)
-end
-
-
-
-
-Inventory = {
-    getItemAtIdx = getTurtleItemAtIdx,
-    getItemByName = getItemByName,
-    ---@table<integer,Item>
-    items = {}
-
-}
 end)
 __bundle_register("getParams", function(require, _LOADED, __bundle_register, __bundle_modules)
 local function greeting()

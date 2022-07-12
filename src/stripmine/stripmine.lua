@@ -4,6 +4,8 @@ require("workingMaterials")
 require("digging")
 require("placing")
 require("enums")
+require("inventory")
+require("navigator")
 --- require("turtle")
 
 
@@ -42,7 +44,6 @@ function setup()
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)
     print(textutils.serialize(Inventory.items))
-    Inventory.getItemByName(WorkingMaterials.TORCH)
     -- print(textutils.serialize(Inventory.items))
 
     

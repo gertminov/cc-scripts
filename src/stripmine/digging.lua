@@ -15,15 +15,24 @@ local function digForward(steps)
     if steps == 0 then
         return
     end
+    local place = function (idx )end
+    local fillIdx = 16
+    local fillBlock = Inventory.findFillBlock()
+    if fillBlock ~= nil then
+        place = Placing.filler
+        fillIdx = fillBlock.idx
+        turtle.select(fillIdx)
+    end
 
     for i = 0, steps do
         digForwardAndUP()
         turtle.forward()
         if not turtle.detectDown() then
-            turtle.placeDown()
+            place(fillIdx)
         end
         if i%8 == 1 then
             Placing.torchBehind()
+            turtle.select(fillIdx)
         end
     end
     turtle.digUp()
@@ -58,11 +67,11 @@ local function changeRow(direction)
         turtle.turnLeft()
         reverseDirection = turtle.turnRight
     end
-    -- digForwardAndUP()
-    -- digForwardAndUP()
-    -- digForwardAndUP()
+    digForwardAndUP()
     turtle.forward()
+    digForwardAndUP()
     turtle.forward()
+    digForwardAndUP()
     turtle.forward()
     reverseDirection()
 end
