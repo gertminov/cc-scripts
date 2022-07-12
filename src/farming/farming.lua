@@ -115,8 +115,8 @@ local function replant()
 end
 
 
-detected = 0
-empty = 0
+local detected = 0
+local empty = 0
 
 while true do
 
