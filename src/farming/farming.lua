@@ -129,6 +129,7 @@ while true do
           --  replant()
         --end
     else
+        print("farming")
         sleep(10)
     end
 
