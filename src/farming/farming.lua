@@ -37,7 +37,7 @@ end
 
 local function checkcurrentslot()
 
-    if turtle.getItemCount(i) = 0 then
+    if turtle.getItemCount(i) == 0 then
         slot+=1
         turtle.select(slot)
     else
