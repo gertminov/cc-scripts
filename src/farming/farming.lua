@@ -3,7 +3,7 @@ slot = 2
 
 local function checkForItem(wantedAmt)
     local items = 0
-    for i=1, 16 do
+    for i=3, 15 do
         items = items+ turtle.getItemCount(i)
     end
     if items >= wantedAmt then
@@ -20,11 +20,11 @@ local function checkForFuel(wantedAmt)
 
     local fuel = 0;
 
-    for i=0, 2 do
+    for i=1, 2 do
         fuel = fuel+ turtle.getItemCount(i)
     end
 
-    if items >= wantedAmt then
+    if fuel >= wantedAmt then
         return true
         else
             return false
@@ -39,6 +39,10 @@ local function checkcurrentslot()
 
     if turtle.getItemCount(i) == 0 then
         slot=slot + 1
+        if slot==17 then
+            slot = 3
+        end
+        
         turtle.select(slot)
         else
             return
@@ -50,14 +54,14 @@ local function plant(steps)
     for i=0, steps do
         
         checkcurrentslot()
-        turtle.placedown()
-        turtle.foreward()
+        turtle.placeDown()
+        turtle.forward()
     end
 end
 
 local function start_pos()
     for i=0, 2 do
-        turtle.foreward()
+        turtle.forward()
     end
     turtle.up()
 end
@@ -84,16 +88,18 @@ end
 
 local function replant()
 
-    for field=0, 3 do
-        for row=0, 7 do
-            plant(7)
-            if row % 2 then
+    for field=0, 1 do
+        for row=0, 6 do
+            plant(5)
+            if row % 2 == 0 then
                 turtle.turnRight()
-                turtle.foreward()
+                turtle.forward()
+                
                 turtle.turnRight()
+                turtle.forward()
                 else
                     turtle.turnLeft()
-                    turtle.foreward()
+                    turtle.forward()
                     turtle.turnLeft()
             end
 
@@ -114,12 +120,14 @@ empty = 0
 
 while true do
 
-    if redstone.getinput() then
+    if rs.getInput("bottom") and detected==0 then
         detected = 1
+        print("detected")
 
-    
-        elseif detected == 1 and redstone.getinput() == 0 then
+    end
+        if detected==1 and not rs.getInput("bottom") then
             detected = 0
+            print("planting")
             empty = 0
             empty = checkForItem(100)
             empty = checkForFuel(10)
@@ -129,10 +137,9 @@ while true do
             --if not empty then
             --  replant()
             --end
+      end      
         
-        else
-            print("farming")
-            sleep(10)
-    end
+            print("wating")
+            sleep(2)
 
 end
