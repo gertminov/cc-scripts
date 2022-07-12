@@ -8,8 +8,8 @@ local function checkForItem(wantedAmt)
     end
     if items >= wantedAmt then
         return true
-    else
-        return false
+        else
+            return false
     end
 
     return false, wantedAmt
@@ -26,8 +26,8 @@ local function checkForFuel(wantedAmt)
 
     if items >= wantedAmt then
         return true
-    else
-        return false
+        else
+            return false
     end
 
     return false, wantedAmt
@@ -38,11 +38,11 @@ end
 local function checkcurrentslot()
 
     if turtle.getItemCount(i) == 0 then
-        slot+=1
+        slot=slot + 1
         turtle.select(slot)
-    else
-        return
-
+        else
+            return
+    end
 end
 
 
@@ -63,7 +63,7 @@ local function start_pos()
 end
 
 
-local function return()
+local function return_pos()
     for i=0, 3 do
         turtle.up()
     end
@@ -91,10 +91,10 @@ local function replant()
                 turtle.turnRight()
                 turtle.foreward()
                 turtle.turnRight()
-            else
-                turtle.turnLeft()
-                turtle.foreward()
-                turtle.turnLeft()
+                else
+                    turtle.turnLeft()
+                    turtle.foreward()
+                    turtle.turnLeft()
             end
 
         end 
@@ -113,24 +113,26 @@ detected = 0
 empty = 0
 
 while true do
+
     if redstone.getinput() then
         detected = 1
 
     
-    else if detected == 1 and redstone.getinput() == 0 then
-        detected = 0
-        empty = 0
-        empty = checkForItem(100)
-        empty = checkForFuel(10)
+        elseif detected == 1 and redstone.getinput() == 0 then
+            detected = 0
+            empty = 0
+            empty = checkForItem(100)
+            empty = checkForFuel(10)
 
-        start_pos()
-        replant()
-        --if not empty then
-          --  replant()
-        --end
-    else
-        print("farming")
-        sleep(10)
+            start_pos()
+            replant()
+            --if not empty then
+            --  replant()
+            --end
+        
+        else
+            print("farming")
+            sleep(10)
     end
 
 end
