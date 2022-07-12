@@ -70,7 +70,7 @@ local function plant(steps)
     for i=0, steps do
         
         checkcurrentslot()
-        turtle.placedown()
+        turtle.placeDown()
         turtle.forward()
     end
 end
@@ -111,14 +111,14 @@ local function replant()
                 turtle.turnRight()
                 turtle.forward()
                 checkcurrentslot()
-                turtle.placedown()
+                turtle.placeDown()
 
                 turtle.turnRight()
             else
                 turtle.turnLeft()
                 turtle.forward()
                 checkcurrentslot()
-                turtle.placedown()
+                turtle.placeDown()
 
                 turtle.turnLeft()
             end
@@ -133,7 +133,7 @@ local function replant()
         --turtle.turnRight()
         --turtle.foreward()
         --checkcurrentslot()
-        --turtle.placedown()
+        --turtle.placeDown()
 
         --turtle.turnRight()
         --plant(7)   
