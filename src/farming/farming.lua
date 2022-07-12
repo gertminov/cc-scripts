@@ -124,6 +124,12 @@ local function replant()
             end
 
         end 
+
+        turtle.turnLeft()
+        turtle.turnLeft()
+        turtle.forward()
+        turtle.down()
+
         --turtle.turnRight()
         --turtle.foreward()
         --checkcurrentslot()
