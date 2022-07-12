@@ -20,12 +20,16 @@ local coordinates = {
     z = 0
 }
 
-local function digging()
+local function digging(rows, steps, direction)
 
     for row = 1, rows do
         Dig.column(steps)
         Dig.changeRow(direction)
     end
+end
+
+function ReturnHome()
+    print("Returning home")
 end
 
 function setup()
@@ -37,9 +41,12 @@ function setup()
     Consumables.checkFuel(steps, rows)
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)
+    print(textutils.serialize(Inventory.items))
+    Inventory.getItemByName(WorkingMaterials.TORCH)
+    -- print(textutils.serialize(Inventory.items))
 
-    print(textutils.serialize(Inventory[WorkingMaterials.TORCH]))
-    digging()
+    
+    digging(rows, steps, direction)
     
 end
 

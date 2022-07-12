@@ -72,6 +72,10 @@ local function digging()
     end
 end
 
+function ReturnHome()
+    print("Returning home")
+end
+
 function setup()
     User.Say.greeting()
     steps = User.Ask.forSteps()
@@ -81,8 +85,11 @@ function setup()
     Consumables.checkFuel(steps, rows)
     Consumables.checkTorches(steps, rows)
     Consumables.checkChests(steps, rows)
+    print(textutils.serialize(Inventory.items))
+    Inventory.getItemByName(WorkingMaterials.TORCH)
+    -- print(textutils.serialize(Inventory.items))
 
-    print(textutils.serialize(Inventory[WorkingMaterials.TORCH]))
+    
     digging()
     
 end
@@ -124,6 +131,11 @@ local function placeTorch()
     if turtle.detect() then
         turtle.dig()
     end
+    local item = Inventory.getItemByName(WorkingMaterials.TORCH)
+    if item.amt <0 then
+        ReturnHome()
+    end
+    turtle.select(item.idx)
     turtle.place()
 end
 
@@ -134,6 +146,8 @@ local function placeTorchBehind()
     turtle.turnRight()
     turtle.turnRight()
 end
+
+
 
 
 
@@ -170,7 +184,7 @@ local function digForward(steps)
             turtle.placeDown()
         end
         if i%8 == 1 then
-            placeTorchBehind()
+            Placing.torchBehind()
         end
     end
     turtle.digUp()
@@ -269,11 +283,12 @@ end
  ---comment
  ---@param steps number
  ---@param rows number
+
+
 local function printTorches(steps, rows)
     local neededAmtTorches = calculateTorches(steps, rows)
     local enoughTorches, missing, slot = checkForTorches(neededAmtTorches)
-    local torches = Item:new{idx = slot, amt = -1, name = WorkingMaterials.TORCH}
-    Inventory[slot] = torches
+    -- local torches = Inventory.getItemAtIdx(slot, WorkingMaterials.TORCH)
 
     if enoughTorches then
         return
@@ -286,7 +301,6 @@ local function printTorches(steps, rows)
         os.pullEvent("turtle_inventory")
         local enough, missing = checkForTorches(neededAmtTorches)
         if enough then
-            Inventory[slot].amt = Inventory.getItemAtIdx(slot, WorkingMaterials.TORCH).count
             print("You have enough torches")
             return
         else
@@ -428,26 +442,54 @@ end
 
 end)
 __bundle_register("inventory", function(require, _LOADED, __bundle_register, __bundle_modules)
+local function updateInventory(item, idx)
+    if item == nil then
+        Inventory.items[idx] = nil
+        return { -1, -1, "no_item"}
+    end
+    local inventoryItem = Item:new{
+        idx = idx,
+        amt = item.count,
+        name = item.name
+    }
+    Inventory.items[idx] = inventoryItem
+    return inventoryItem
+    
+end
+
 ---comment
 ---@param idx number
 ---@param name? string
 ---@return  {count: number, name :string} item
-local function  getItemAtIdx(idx, name)
+local function  getTurtleItemAtIdx(idx, name)
     
     local item = turtle.getItemDetail(idx)
     if name == nil then
-        return item
+        return updateInventory(item, idx)
     elseif item.name == name then
-            return item
+            return updateInventory(item, idx)
     end
-    return {-1, "item not found"}
+    return updateInventory(nil, idx)
+end
+
+
+local function getItemByName(name)
+    for i=1, 16 do
+        local item = getTurtleItemAtIdx(i)
+        if item.name == name then
+            return item
+        end
+    end
+    return updateInventory(nil, -1)
 end
 
 
 
+
 Inventory = {
-    getItemAtIdx = getItemAtIdx,
-    ---@table<string,Item>
+    getItemAtIdx = getTurtleItemAtIdx,
+    getItemByName = getItemByName,
+    ---@table<integer,Item>
     items = {}
 
 }

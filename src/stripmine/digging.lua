@@ -23,7 +23,7 @@ local function digForward(steps)
             turtle.placeDown()
         end
         if i%8 == 1 then
-            placeTorchBehind()
+            Placing.torchBehind()
         end
     end
     turtle.digUp()
@@ -54,13 +54,16 @@ local function changeRow(direction)
     if direction == Direction.RIGHT then
         turtle.turnRight()
         reverseDirection = turtle.turnLeft
-        else
+    else
         turtle.turnLeft()
         reverseDirection = turtle.turnRight
     end
-    digForwardAndUP()
-    digForwardAndUP()
-    digForwardAndUP()
+    -- digForwardAndUP()
+    -- digForwardAndUP()
+    -- digForwardAndUP()
+    turtle.forward()
+    turtle.forward()
+    turtle.forward()
     reverseDirection()
 end
 

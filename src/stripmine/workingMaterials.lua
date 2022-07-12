@@ -46,10 +46,10 @@ end
 local function printTorches(steps, rows)
     local neededAmtTorches = calculateTorches(steps, rows)
     local enoughTorches, missing, slot = checkForTorches(neededAmtTorches)
-    local torches = Item:new{idx = slot, amt = -1, name = WorkingMaterials.TORCH}
-    Inventory[slot] = torches
+    -- local torches = Inventory.getItemAtIdx(slot, WorkingMaterials.TORCH)
 
     if enoughTorches then
+        print("You have enough torches")
         return
     else
         neededAmtTorches = missing
@@ -60,7 +60,6 @@ local function printTorches(steps, rows)
         os.pullEvent("turtle_inventory")
         local enough, missing = checkForTorches(neededAmtTorches)
         if enough then
-            Inventory[slot].amt = Inventory.getItemAtIdx(slot, WorkingMaterials.TORCH).count
             print("You have enough torches")
             return
         else
@@ -93,6 +92,7 @@ local function printChests(steps, rows)
 
     local enoughChests, missing = checkForChests(amtChests)
     if enoughChests then
+        print("You have enough chests")
         return
     else
         amtChests = missing
@@ -111,15 +111,28 @@ local function printChests(steps, rows)
     end
 end
 
+local function refuel(slot)
+    turtle.select(slot)
+    turtle.refuel()
+    turtle.select(1)
+end
 
+---comment
+---@param amtFuel number
+---@return boolean enoughFuel
+---@return integer still_needed
+---@return integer inventory_slot
 local function checkForFuel(amtFuel)
+    if amtFuel <= 0 then
+        return true, 0 , -1
+    end
     for i=1, 16 do
         if turtle.getItemCount(i) > 0 then
             local details = turtle.getItemDetail(i)
             for fuelType, fuelAmt in pairs(WorkingMaterials.FUEL) do
                 if string.find(details.name, fuelType) then
                     if details.count*fuelAmt >= amtFuel then
-                        return true, 0
+                        return true, 0, i
                     else
                         return false, math.ceil(amtFuel - details.count*fuelAmt)
                     end
@@ -130,6 +143,17 @@ local function checkForFuel(amtFuel)
     end
     return false, amtFuel
 end
+
+local function checkFuelLevel(neededFuel)
+    local fuellevel = turtle.getFuelLevel()
+    neededFuel = neededFuel - fuellevel
+    if neededFuel < 0 then
+        neededFuel = 0
+    end
+    return neededFuel
+end
+
+
 
 ---comment
 ---@param steps number
@@ -145,8 +169,13 @@ end
     ---@param rows number
 local function printFuel(steps, rows)
     local amtFuel = calculateFuel(steps, rows)
-    local enoughFuel, missing = checkForFuel(amtFuel)
+    amtFuel = checkFuelLevel(amtFuel)
+    local enoughFuel, missing, slot = checkForFuel(amtFuel)
     if enoughFuel then
+        print("you have enough fuel")
+        if amtFuel > 0 then
+            refuel(slot)
+        end
         return
     else
         amtFuel = missing
@@ -155,8 +184,9 @@ local function printFuel(steps, rows)
     print("Please place it into the turtles inventory")
     while true do
         os.pullEvent("turtle_inventory")
-        local enough, missing = checkForFuel(amtFuel)
+        local enough, missing, slot = checkForFuel(amtFuel)
         if enough then
+            refuel(slot)
             print("You have enough fuel")
             return
         else
@@ -164,6 +194,9 @@ local function printFuel(steps, rows)
         end
     end
 end
+
+
+
 
 
 
