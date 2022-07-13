@@ -177,20 +177,35 @@ local function getItemByName(name)
     return item
 end
 
+
+local fillblock = nil
 ---comment
 ---@return Item| nil item 
 local function findFillBlock()
+    if fillblock ~= nil then
+        for j, name in pairs(WorkingMaterials.FILLBLOCK) do
+            if string.find(fillblock.name, name) then
+                return Item:new{
+                    idx = i,
+                    amt = fillblock.count,
+                    name = fillblock.name
+                }
+            end
+            
+        end
+    end
+
     for i=1, 16 do
         local item = turtle.getItemDetail(i)
-        if item ~= nil then
-            
+        if item ~= nil then  
             for j, name in pairs(WorkingMaterials.FILLBLOCK) do
                 if string.find(item.name, name) then
-                    return Item:new{
+                    fillblock = Item:new{
                         idx = i,
                         amt = item.count,
                         name = item.name
                     }
+                    return fillblock
                 end
                 
             end
