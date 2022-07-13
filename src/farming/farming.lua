@@ -21,10 +21,10 @@ local function checkForFuel(wantedAmt)
     local fuel = 0;
 
     for i=1, 2 do
-        fuel = fuel+ turtle.getItemCount(i)
+        fuel = fuel + turtle.getItemCount(i)
     end
 
-    if items >= wantedAmt then
+    if fuel >= wantedAmt then
         return true
         else
             return false
@@ -70,7 +70,7 @@ local function plant(steps)
     for i=0, steps do
         
         checkcurrentslot()
-        turtle.placedown()
+        turtle.placeDown()
         turtle.forward()
     end
 end
@@ -111,23 +111,29 @@ local function replant()
                 turtle.turnRight()
                 turtle.forward()
                 checkcurrentslot()
-                turtle.placedown()
+                turtle.placeDown()
 
                 turtle.turnRight()
             else
                 turtle.turnLeft()
                 turtle.forward()
                 checkcurrentslot()
-                turtle.placedown()
+                turtle.placeDown()
 
                 turtle.turnLeft()
             end
 
         end 
+
+        turtle.turnLeft()
+        turtle.turnLeft()
+        turtle.forward()
+        turtle.down()
+
         --turtle.turnRight()
         --turtle.foreward()
         --checkcurrentslot()
-        --turtle.placedown()
+        --turtle.placeDown()
 
         --turtle.turnRight()
         --plant(7)   
@@ -139,7 +145,7 @@ end
 
 
 local detected = 0
-local empty = 0
+local not_empty = 0
 
 while true do
 
@@ -151,16 +157,18 @@ while true do
     if detected == 1 and not rs.getInput("Bottom") then
             
             detected = 0
-            empty = 0
-            empty = checkForItem(140)
-            empty = checkForFuel(3)
+            not_empty = 0
+            not_empty = checkForItem(140)
+            not_empty = checkForFuel(3)
 
-            if not empty then
+            if not_empty then
               print("planting")
               refuel(3)
               replant()
+            
+            else
+                print("empty")
             end
-        
         else
             print("waiting")
             sleep(2)
